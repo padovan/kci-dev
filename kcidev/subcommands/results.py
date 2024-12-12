@@ -16,7 +16,8 @@ DASHBOARD_API = "https://dashboard.kernelci.org/api/"
 def fetch_from_api(endpoint, params):
     base_url = urllib.parse.urljoin(DASHBOARD_API, endpoint)
     try:
-        r = requests.get(base_url, params=params)
+        url = '{}?{}'.format(base_url, urllib.parse.urlencode(params))
+        r = requests.get(url)
     except:
         click.secho(f"Failed to fetch from {DASHBOARD_API}.")
         raise click.Abort()
@@ -69,6 +70,7 @@ def fetch_full_results(origin, giturl, branch, commit):
         "origin": origin,
         "git_url": giturl,
         "git_branch": branch,
+        "commit": commit
     }
 
     return fetch_from_api(endpoint, params)
