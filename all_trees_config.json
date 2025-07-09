@@ -1,0 +1,277 @@
+{
+  "amlogic/for-next": {
+    "giturl": "https://git.kernel.org/pub/scm/linux/kernel/git/amlogic/linux.git",
+    "branch": "for-next",
+    "active": true
+  },
+  "android/android13-5.15-lts": {
+    "giturl": "https://android.googlesource.com/kernel/common",
+    "branch": "android13-5.15-lts",
+    "active": true
+  },
+  "android/android14-6.1": {
+    "giturl": "https://android.googlesource.com/kernel/common",
+    "branch": "android14-6.1",
+    "active": true
+  },
+  "android/android15-6.6": {
+    "giturl": "https://android.googlesource.com/kernel/common",
+    "branch": "android15-6.6",
+    "active": true
+  },
+  "android/android15-6.6-lts": {
+    "giturl": "https://android.googlesource.com/kernel/common",
+    "branch": "android15-6.6-lts",
+    "active": true
+  },
+  "android/android-mainline": {
+    "giturl": "https://android.googlesource.com/kernel/common",
+    "branch": "android-mainline",
+    "active": true
+  },
+  "android/android12-5.10-lts": {
+    "giturl": "https://android.googlesource.com/kernel/common",
+    "branch": "android12-5.10-lts",
+    "active": true
+  },
+  "android/android16-6.12": {
+    "giturl": "https://android.googlesource.com/kernel/common",
+    "branch": "android16-6.12",
+    "active": true
+  },
+  "arm64/for-kernelci": {
+    "giturl": "https://git.kernel.org/pub/scm/linux/kernel/git/arm64/linux.git",
+    "branch": "for-kernelci",
+    "active": true
+  },
+  "broonie-regmap/for-next": {
+    "giturl": "https://git.kernel.org/pub/scm/linux/kernel/git/broonie/regmap.git",
+    "branch": "for-next",
+    "active": true
+  },
+  "broonie-regulator/for-next": {
+    "giturl": "https://git.kernel.org/pub/scm/linux/kernel/git/broonie/regulator.git",
+    "branch": "for-next",
+    "active": true
+  },
+  "broonie-regulator/for-linus": {
+    "giturl": "https://git.kernel.org/pub/scm/linux/kernel/git/broonie/regulator.git",
+    "branch": "for-linus",
+    "active": true
+  },
+  "broonie-sound/for-next": {
+    "giturl": "https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git",
+    "branch": "for-next",
+    "active": true
+  },
+  "broonie-sound/for-linus": {
+    "giturl": "https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git",
+    "branch": "for-linus",
+    "active": true
+  },
+  "broonie-spi/for-next": {
+    "giturl": "https://git.kernel.org/pub/scm/linux/kernel/git/broonie/spi.git",
+    "branch": "for-next",
+    "active": true
+  },
+  "chromiumos/chromeos-5.10": {
+    "giturl": "https://chromium.googlesource.com/chromiumos/third_party/kernel.git",
+    "branch": "chromeos-5.10",
+    "active": true
+  },
+  "chromiumos/chromeos-5.15": {
+    "giturl": "https://chromium.googlesource.com/chromiumos/third_party/kernel.git",
+    "branch": "chromeos-5.15",
+    "active": true
+  },
+  "chromiumos/chromeos-6.12": {
+    "giturl": "https://chromium.googlesource.com/chromiumos/third_party/kernel.git",
+    "branch": "chromeos-6.12",
+    "active": true
+  },
+  "chromiumos/chromeos-6.1": {
+    "giturl": "https://chromium.googlesource.com/chromiumos/third_party/kernel.git",
+    "branch": "chromeos-6.1",
+    "active": true
+  },
+  "chromiumos/chromeos-6.6": {
+    "giturl": "https://chromium.googlesource.com/chromiumos/third_party/kernel.git",
+    "branch": "chromeos-6.6",
+    "active": true
+  },
+  "chromiumos/chromeos-5.4": {
+    "giturl": "https://chromium.googlesource.com/chromiumos/third_party/kernel.git",
+    "branch": "chromeos-5.4",
+    "active": true
+  },
+  "cip/linux-4.4.y-cip-rt": {
+    "giturl": "https://git.kernel.org/pub/scm/linux/kernel/git/cip/linux-cip.git",
+    "branch": "linux-4.4.y-cip-rt",
+    "active": true
+  },
+  "cip/linux-6.12.y-cip": {
+    "giturl": "https://git.kernel.org/pub/scm/linux/kernel/git/cip/linux-cip.git",
+    "branch": "linux-6.12.y-cip",
+    "active": true
+  },
+  "cip/linux-6.1.y-cip": {
+    "giturl": "https://git.kernel.org/pub/scm/linux/kernel/git/cip/linux-cip.git",
+    "branch": "linux-6.1.y-cip",
+    "active": true
+  },
+  "efi/next": {
+    "giturl": "https://git.kernel.org/pub/scm/linux/kernel/git/efi/efi.git",
+    "branch": "next",
+    "active": true
+  },
+  "krzysztof/for-next": {
+    "giturl": "https://git.kernel.org/pub/scm/linux/kernel/git/krzk/linux.git",
+    "branch": "for-next",
+    "active": true
+  },
+  "kselftest/next": {
+    "giturl": "https://git.kernel.org/pub/scm/linux/kernel/git/shuah/linux-kselftest.git",
+    "branch": "next",
+    "active": true
+  },
+  "lee-mfd/for-mfd-next": {
+    "giturl": "https://git.kernel.org/pub/scm/linux/kernel/git/lee/mfd.git",
+    "branch": "for-mfd-next",
+    "active": true
+  },
+  "linux-pci/next": {
+    "giturl": "https://git.kernel.org/pub/scm/linux/kernel/git/pci/pci.git",
+    "branch": "next",
+    "active": true
+  },
+  "mainline/master": {
+    "giturl": "https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git",
+    "branch": "master",
+    "active": true
+  },
+  "media-committers/next": {
+    "giturl": "https://gitlab.freedesktop.org/linux-media/media-committers.git",
+    "branch": "next",
+    "active": true
+  },
+  "mediatek/for-next": {
+    "giturl": "https://git.kernel.org/pub/scm/linux/kernel/git/mediatek/linux.git",
+    "branch": "for-next",
+    "active": true
+  },
+  "net-next/main": {
+    "giturl": "https://git.kernel.org/pub/scm/linux/kernel/git/netdev/net-next.git",
+    "branch": "main",
+    "active": true
+  },
+  "next/pending-fixes": {
+    "giturl": "https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git",
+    "branch": "pending-fixes",
+    "active": true
+  },
+  "next/master": {
+    "giturl": "https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git",
+    "branch": "master",
+    "active": true
+  },
+  "omap/for-next": {
+    "giturl": "https://git.kernel.org/pub/scm/linux/kernel/git/khilman/linux-omap.git",
+    "branch": "for-next",
+    "active": true
+  },
+  "pm/testing": {
+    "giturl": "https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git",
+    "branch": "testing",
+    "active": true
+  },
+  "renesas/master": {
+    "giturl": "https://git.kernel.org/pub/scm/linux/kernel/git/geert/renesas-devel.git",
+    "branch": "master",
+    "active": true
+  },
+  "renesas/next": {
+    "giturl": "https://git.kernel.org/pub/scm/linux/kernel/git/geert/renesas-devel.git",
+    "branch": "next",
+    "active": true
+  },
+  "riscv/fixes": {
+    "giturl": "https://git.kernel.org/pub/scm/linux/kernel/git/riscv/linux.git",
+    "branch": "fixes",
+    "active": true
+  },
+  "sashal-next/linus-next": {
+    "giturl": "https://git.kernel.org/pub/scm/linux/kernel/git/sashal/linus-next.git",
+    "branch": "linus-next",
+    "active": true
+  },
+  "soc/for-next": {
+    "giturl": "https://git.kernel.org/pub/scm/linux/kernel/git/soc/soc.git",
+    "branch": "for-next",
+    "active": true
+  },
+  "soc/arm/fixes": {
+    "giturl": "https://git.kernel.org/pub/scm/linux/kernel/git/soc/soc.git",
+    "branch": "arm/fixes",
+    "active": true
+  },
+  "stable/linux-6.12.y": {
+    "giturl": "https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git",
+    "branch": "linux-6.12.y",
+    "active": true
+  },
+  "stable/linux-6.6.y": {
+    "giturl": "https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git",
+    "branch": "linux-6.6.y",
+    "active": true
+  },
+  "stable/linux-6.1.y": {
+    "giturl": "https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git",
+    "branch": "linux-6.1.y",
+    "active": true
+  },
+  "stable-rc/linux-5.15.y": {
+    "giturl": "https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable-rc.git",
+    "branch": "linux-5.15.y",
+    "active": true
+  },
+  "stable-rc/linux-6.1.y": {
+    "giturl": "https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable-rc.git",
+    "branch": "linux-6.1.y",
+    "active": true
+  },
+  "stable-rc/linux-5.10.y": {
+    "giturl": "https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable-rc.git",
+    "branch": "linux-5.10.y",
+    "active": true
+  },
+  "stable-rc/linux-6.6.y": {
+    "giturl": "https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable-rc.git",
+    "branch": "linux-6.6.y",
+    "active": true
+  },
+  "stable-rc/linux-6.12.y": {
+    "giturl": "https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable-rc.git",
+    "branch": "linux-6.12.y",
+    "active": true
+  },
+  "stable-rc/linux-5.4.y": {
+    "giturl": "https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable-rc.git",
+    "branch": "linux-5.4.y",
+    "active": true
+  },
+  "stable-rt/v5.10-rt": {
+    "giturl": "https://git.kernel.org/pub/scm/linux/kernel/git/rt/linux-stable-rt.git",
+    "branch": "v5.10-rt",
+    "active": true
+  },
+  "tip/master": {
+    "giturl": "https://git.kernel.org/pub/scm/linux/kernel/git/tip/tip.git",
+    "branch": "master",
+    "active": true
+  },
+  "ulfh/next": {
+    "giturl": "https://git.kernel.org/pub/scm/linux/kernel/git/ulfh/mmc.git",
+    "branch": "next",
+    "active": true
+  }
+}

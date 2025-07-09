@@ -1,0 +1,42 @@
+{
+  "chromiumos/chromeos-6.12": {
+    "giturl": "https://chromium.googlesource.com/chromiumos/third_party/kernel.git",
+    "branch": "chromeos-6.12",
+    "active": true
+  },
+  "chromiumos/chromeos-6.6": {
+    "giturl": "https://chromium.googlesource.com/chromiumos/third_party/kernel.git",
+    "branch": "chromeos-6.6",
+    "active": true
+  },
+  "chromiumos/chromeos-6.1": {
+    "giturl": "https://chromium.googlesource.com/chromiumos/third_party/kernel.git",
+    "branch": "chromeos-6.1",
+    "active": true
+  },
+  "chromiumos/chromeos-5.15": {
+    "giturl": "https://chromium.googlesource.com/chromiumos/third_party/kernel.git",
+    "branch": "chromeos-5.15",
+    "active": true
+  },
+  "chromiumos/chromeos-5.10": {
+    "giturl": "https://chromium.googlesource.com/chromiumos/third_party/kernel.git",
+    "branch": "chromeos-5.10",
+    "active": true
+  },
+  "android/android15-6.6": {
+    "giturl": "https://android.googlesource.com/kernel/common",
+    "branch": "android15-6.6",
+    "active": true
+  },
+  "android/android16-6.12": {
+    "giturl": "https://android.googlesource.com/kernel/common",
+    "branch": "android16-6.12",
+    "active": true
+  },
+  "mainline/master": {
+    "giturl": "https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git",
+    "branch": "master",
+    "active": false
+  }
+}
