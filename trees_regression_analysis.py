@@ -14,6 +14,7 @@ import sys
 import time
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple
+
 import requests
 
 # =============================================================================
@@ -106,12 +107,14 @@ class RegressionAnalyzer:
                 endpoint = f"{self.dashboard_api_base}build/{node_id}"
             else:  # tests, boots
                 endpoint = f"{self.dashboard_api_base}test/{node_id}"
-            
+
             response = requests.get(endpoint, timeout=10)
             if response.status_code == 200:
                 return response.json()
             else:
-                print(f"  ⚠️  Failed to fetch details for {node_id}: HTTP {response.status_code}")
+                print(
+                    f"  ⚠️  Failed to fetch details for {node_id}: HTTP {response.status_code}"
+                )
                 return None
         except requests.RequestException as e:
             print(f"  ⚠️  API request failed for {node_id}: {e}")
@@ -123,18 +126,47 @@ class RegressionAnalyzer:
     def is_infrastructure_error_msg(self, error_msg: str) -> bool:
         """Check if error message indicates infrastructure issues."""
         infrastructure_keywords = [
-            "infrastructure", "timeout", "cancelled", "connection", 
-            "network", "unavailable", "unreachable", "disconnected",
-            "interrupted", "aborted", "killed", "terminated",
-            "resource", "capacity", "quota", "limit", "overload",
-            "maintenance", "offline", "down", "failure", "crash",
-            "socket", "broken pipe", "connection reset", "dns",
-            "certificate", "ssl", "tls", "authentication failed",
-            "out of memory", "oom", "disk full", "no space left",
-            "permission denied", "access denied", "forbidden",
-            "unable", "invalid"
+            "infrastructure",
+            "timeout",
+            "cancelled",
+            "connection",
+            "network",
+            "unavailable",
+            "unreachable",
+            "disconnected",
+            "interrupted",
+            "aborted",
+            "killed",
+            "terminated",
+            "resource",
+            "capacity",
+            "quota",
+            "limit",
+            "overload",
+            "maintenance",
+            "offline",
+            "down",
+            "failure",
+            "crash",
+            "socket",
+            "broken pipe",
+            "connection reset",
+            "dns",
+            "certificate",
+            "ssl",
+            "tls",
+            "authentication failed",
+            "out of memory",
+            "oom",
+            "disk full",
+            "no space left",
+            "permission denied",
+            "access denied",
+            "forbidden",
+            "unable",
+            "invalid",
         ]
-        
+
         error_msg_lower = error_msg.lower()
         return any(keyword in error_msg_lower for keyword in infrastructure_keywords)
 
@@ -144,77 +176,89 @@ class RegressionAnalyzer:
         enhanced_regression["inconclusive"] = False
         enhanced_regression["inconclusive_reason"] = ""
         enhanced_regression["dashboard_details"] = None
-        
+
         node_id = regression.get("id")
         if not node_id:
             return enhanced_regression
-            
+
         # Fetch detailed information from dashboard API
         details = self.fetch_dashboard_details(node_id, reg_type)
         if details:
             enhanced_regression["dashboard_details"] = details
-            
+
             # Check for inconclusive conditions based on API response fields
             if reg_type in ["boots", "tests"]:
                 status = details.get("status", "")
-                
+
                 # Check for error_code and error_msg in both top level and misc
                 error_code = details.get("error_code", "")
                 error_msg = details.get("error_msg", "")
-                
+
                 # Also check in misc object if not found at top level
                 misc = details.get("misc", {})
                 if not error_code and misc:
                     error_code = misc.get("error_code", "")
                 if not error_msg and misc:
                     error_msg = misc.get("error_msg", "")
-                
+
                 # Check for Infrastructure error_code
                 if error_code == "Infrastructure":
                     enhanced_regression["inconclusive"] = True
-                    enhanced_regression["inconclusive_reason"] = "Infrastructure error code"
-                
+                    enhanced_regression["inconclusive_reason"] = (
+                        "Infrastructure error code"
+                    )
+
                 # Check for Job errors with infrastructure-related error messages
                 elif error_code == "Job" and error_msg:
                     if self.is_infrastructure_error_msg(error_msg):
                         enhanced_regression["inconclusive"] = True
-                        enhanced_regression["inconclusive_reason"] = f"Job error with infrastructure issue: {error_msg[:100]}..."
-                
+                        enhanced_regression["inconclusive_reason"] = (
+                            f"Job error with infrastructure issue: {error_msg[:100]}..."
+                        )
+
                 # Check for other problematic statuses
                 elif status in ["MISS", "ERROR", "SKIP"]:
                     enhanced_regression["inconclusive"] = True
-                    enhanced_regression["inconclusive_reason"] = f"Test status: {status}"
-            
+                    enhanced_regression["inconclusive_reason"] = (
+                        f"Test status: {status}"
+                    )
+
             elif reg_type == "builds":
                 status = details.get("status", "")
-                
+
                 # Check for error_code and error_msg in both top level and misc
                 error_code = details.get("error_code", "")
                 error_msg = details.get("error_msg", "")
-                
+
                 # Also check in misc object if not found at top level
                 misc = details.get("misc", {})
                 if not error_code and misc:
                     error_code = misc.get("error_code", "")
                 if not error_msg and misc:
                     error_msg = misc.get("error_msg", "")
-                
+
                 # Check for Infrastructure error_code
                 if error_code == "Infrastructure":
                     enhanced_regression["inconclusive"] = True
-                    enhanced_regression["inconclusive_reason"] = "Infrastructure error code"
-                
+                    enhanced_regression["inconclusive_reason"] = (
+                        "Infrastructure error code"
+                    )
+
                 # Check for Job errors with infrastructure-related error messages
                 elif error_code == "Job" and error_msg:
                     if self.is_infrastructure_error_msg(error_msg):
                         enhanced_regression["inconclusive"] = True
-                        enhanced_regression["inconclusive_reason"] = f"Job error with infrastructure issue: {error_msg[:100]}..."
-                
+                        enhanced_regression["inconclusive_reason"] = (
+                            f"Job error with infrastructure issue: {error_msg[:100]}..."
+                        )
+
                 # Check for other problematic build statuses
                 elif status in ["MISS", "ERROR", "SKIP"]:
                     enhanced_regression["inconclusive"] = True
-                    enhanced_regression["inconclusive_reason"] = f"Build status: {status}"
-        
+                    enhanced_regression["inconclusive_reason"] = (
+                        f"Build status: {status}"
+                    )
+
         return enhanced_regression
 
     def analyze_branch(self, tree_branch_key: str, config: Dict) -> Dict:
@@ -243,23 +287,29 @@ class RegressionAnalyzer:
 
         if success and regression_data:
             branch_result["success"] = True
-            
+
             # Enhance regressions with detailed information
             enhanced_regression_data = regression_data.copy()
             for reg_type in ["builds", "boots", "tests"]:
                 if reg_type in enhanced_regression_data.get("regressions", {}):
                     enhanced_regressions = []
                     regressions = enhanced_regression_data["regressions"][reg_type]
-                    
+
                     if regressions:
-                        print(f"  🔍 Fetching details for {len(regressions)} {reg_type} regressions...")
-                        
+                        print(
+                            f"  🔍 Fetching details for {len(regressions)} {reg_type} regressions..."
+                        )
+
                         for regression in regressions:
-                            enhanced_regression = self.analyze_regression_details(regression, reg_type)
+                            enhanced_regression = self.analyze_regression_details(
+                                regression, reg_type
+                            )
                             enhanced_regressions.append(enhanced_regression)
-                    
-                    enhanced_regression_data["regressions"][reg_type] = enhanced_regressions
-            
+
+                    enhanced_regression_data["regressions"][
+                        reg_type
+                    ] = enhanced_regressions
+
             branch_result["regression_data"] = enhanced_regression_data
             # Calculate inconclusive statistics
             inconclusive_stats = {
@@ -268,17 +318,25 @@ class RegressionAnalyzer:
                 "boot_inconclusive": 0,
                 "test_inconclusive": 0,
             }
-            
+
             for reg_type in ["builds", "boots", "tests"]:
                 if reg_type in enhanced_regression_data.get("regressions", {}):
                     regressions = enhanced_regression_data["regressions"][reg_type]
-                    inconclusive_count = sum(1 for reg in regressions if reg.get("inconclusive", False))
-                    inconclusive_stats[f"{reg_type[:-1]}_inconclusive"] = inconclusive_count
+                    inconclusive_count = sum(
+                        1 for reg in regressions if reg.get("inconclusive", False)
+                    )
+                    inconclusive_stats[f"{reg_type[:-1]}_inconclusive"] = (
+                        inconclusive_count
+                    )
                     inconclusive_stats["total_inconclusive"] += inconclusive_count
-            
+
             branch_result["summary"] = {
-                "total_regressions": enhanced_regression_data.get("total_regressions", 0),
-                "build_regressions": enhanced_regression_data.get("build_regressions", 0),
+                "total_regressions": enhanced_regression_data.get(
+                    "total_regressions", 0
+                ),
+                "build_regressions": enhanced_regression_data.get(
+                    "build_regressions", 0
+                ),
                 "boot_regressions": enhanced_regression_data.get("boot_regressions", 0),
                 "test_regressions": enhanced_regression_data.get("test_regressions", 0),
                 **inconclusive_stats,
@@ -344,7 +402,7 @@ class RegressionAnalyzer:
             for result in self.results.values()
             if result["success"]
         )
-        
+
         total_inconclusive = sum(
             result["summary"].get("total_inconclusive", 0)
             for result in self.results.values()
@@ -356,7 +414,9 @@ class RegressionAnalyzer:
                 "🎉 OVERALL STATUS: ALL BRANCHES CLEAN - NO REGRESSIONS DETECTED"
             )
         else:
-            status_msg = f"⚠️  OVERALL STATUS: {total_regressions} TOTAL REGRESSIONS FOUND"
+            status_msg = (
+                f"⚠️  OVERALL STATUS: {total_regressions} TOTAL REGRESSIONS FOUND"
+            )
             if total_inconclusive > 0:
                 status_msg += f" ({total_inconclusive} INCONCLUSIVE)"
             report.append(status_msg)
@@ -375,13 +435,13 @@ class RegressionAnalyzer:
                 if regressions > 0:
                     summary = result["summary"]
                     inconclusive_total = summary.get("total_inconclusive", 0)
-                    
+
                     regression_summary = (
                         f"    📊 Builds: {summary['build_regressions']}, "
                         f"Boots: {summary['boot_regressions']}, "
                         f"Tests: {summary['test_regressions']}"
                     )
-                    
+
                     if inconclusive_total > 0:
                         inconclusive_summary = (
                             f"    ⚠️  Inconclusive: {summary.get('build_inconclusive', 0)} builds, "
@@ -428,7 +488,7 @@ class RegressionAnalyzer:
                             else:
                                 status_icon = "🔴"
                                 status_text = ""
-                            
+
                             if reg_type == "builds":
                                 dashboard_link = f"https://d.kernelci.org/b/{reg['id']}"
                                 report.append(
@@ -492,7 +552,7 @@ class RegressionAnalyzer:
 def load_tree_config(config_path: str) -> Dict:
     """Load tree configuration from JSON file."""
     try:
-        with open(config_path, 'r') as f:
+        with open(config_path, "r") as f:
             return json.load(f)
     except FileNotFoundError:
         print(f"❌ Error: Config file not found: {config_path}")
@@ -514,48 +574,44 @@ def main():
         "--config",
         "-c",
         default="trees_config.json",
-        help="Path to trees configuration JSON file (default: trees_config.json)"
+        help="Path to trees configuration JSON file (default: trees_config.json)",
     )
     parser.add_argument(
-        "--origin",
-        default="maestro",
-        help="KCIDB origin to use (default: maestro)"
+        "--origin", default="maestro", help="KCIDB origin to use (default: maestro)"
     )
     parser.add_argument(
         "--timeout",
         type=int,
         default=120,
-        help="Command timeout in seconds (default: 120)"
+        help="Command timeout in seconds (default: 120)",
     )
     parser.add_argument(
-        "--no-json",
-        action="store_true",
-        help="Disable JSON report output"
+        "--no-json", action="store_true", help="Disable JSON report output"
     )
     parser.add_argument(
         "--json-dir",
         default="./regression_reports",
-        help="Directory to save JSON reports (default: ./regression_reports)"
+        help="Directory to save JSON reports (default: ./regression_reports)",
     )
     parser.add_argument(
         "--tree",
         "-t",
         action="append",
-        help="Specific tree/branch to analyze (e.g., android/android13-5.15-lts). Can be used multiple times. If not specified, all active trees from config will be analyzed."
+        help="Specific tree/branch to analyze (e.g., android/android13-5.15-lts). Can be used multiple times. If not specified, all active trees from config will be analyzed.",
     )
-    
+
     args = parser.parse_args()
-    
+
     # Update global settings from command line arguments
     global KCIDB_ORIGIN, COMMAND_TIMEOUT, SAVE_JSON_OUTPUT, JSON_OUTPUT_DIR
     KCIDB_ORIGIN = args.origin
     COMMAND_TIMEOUT = args.timeout
     SAVE_JSON_OUTPUT = not args.no_json
     JSON_OUTPUT_DIR = args.json_dir
-    
+
     # Load tree configuration
     tree_branches = load_tree_config(args.config)
-    
+
     # Filter trees if specific trees are requested
     if args.tree:
         filtered_trees = {}
@@ -565,18 +621,22 @@ def main():
             else:
                 print(f"⚠️  Warning: Tree '{tree_name}' not found in config file")
                 available_trees = list(tree_branches.keys())
-                print(f"Available trees: {', '.join(available_trees[:5])}{'...' if len(available_trees) > 5 else ''}")
-        
+                print(
+                    f"Available trees: {', '.join(available_trees[:5])}{'...' if len(available_trees) > 5 else ''}"
+                )
+
         if not filtered_trees:
             print("❌ Error: No valid trees found to analyze")
             sys.exit(1)
-        
+
         tree_branches = filtered_trees
-        print(f"🎯 Analyzing {len(tree_branches)} specific tree(s): {', '.join(tree_branches.keys())}")
+        print(
+            f"🎯 Analyzing {len(tree_branches)} specific tree(s): {', '.join(tree_branches.keys())}"
+        )
     else:
         active_trees = {k: v for k, v in tree_branches.items() if v.get("active", True)}
         print(f"🎯 Analyzing {len(active_trees)} active trees from config")
-    
+
     try:
         analyzer = RegressionAnalyzer(tree_branches)
         analyzer.run_analysis()
