@@ -119,7 +119,7 @@ class RegressionAnalyzer:
             else:  # tests, boots
                 endpoint = f"{self.dashboard_api_base}test/{node_id}"
 
-            response = requests.get(endpoint, timeout=10)
+            response = requests.get(endpoint, timeout=30)
             if response.status_code == 200:
                 return response.json()
             else:
@@ -134,49 +134,103 @@ class RegressionAnalyzer:
             print(f"  ⚠️  Unexpected error fetching {node_id}: {e}")
             return None
 
-    def fetch_test_status_history(self, node_id: str) -> Optional[List[Dict]]:
+    def fetch_test_status_history(self, node_id: str, details: Dict = None) -> Optional[List[Dict]]:
         """Fetch test status history from main dashboard API."""
         try:
-            endpoint = f"{self.dashboard_api_base}test/{node_id}/status_history/"
-            response = requests.get(endpoint, timeout=10)
+            endpoint = f"{self.dashboard_api_base}test/status-history"
+
+            # Add query parameters that might be required by the API
+            params = {
+                'origin': KCIDB_ORIGIN,
+                'limit': 10  # Limit to recent history entries
+            }
+
+            # Add additional parameters from regression details if available
+            if details and 'config_name' in details:
+                params['config_name'] = details['config_name']
+            if details and 'environment_misc' in details and 'platform' in details['environment_misc']:
+                params['platform'] = details['environment_misc']['platform']
+            if details and 'path' in details:
+                params['path'] = details['path']
+            if details and 'git_repository_url' in details:
+                params['git_repository_url'] = details['git_repository_url']
+            if details and 'git_repository_branch' in details:
+                params['git_repository_branch'] = details['git_repository_branch']
+            if details and 'field_timestamp' in details:
+                params['field_timestamp'] = details['field_timestamp']
+            if details and 'start_time' in details:
+                params['current_test_start_time'] = details['start_time']
+
+            response = requests.get(endpoint, params=params, timeout=30)
+
             if response.status_code == 200:
-                return response.json()
+                data = response.json()
+                return data
+            elif response.status_code == 403:
+                # API requires authentication - common in production environments
+                if not hasattr(self, '_api_auth_warning_shown'):
+                    print("  ⚠️  Dashboard API requires authentication - status history unavailable")
+                    self._api_auth_warning_shown = True
+                return None
             elif response.status_code == 404:
-                # Test ID not found - this is expected for some tests
+                # Test ID not found or no history available - this is common
+                # Don't spam with individual 404 messages, show summary instead
+                if not hasattr(self, '_api_404_count'):
+                    self._api_404_count = 0
+                self._api_404_count += 1
                 return None
             else:
-                print(
-                    f"  ⚠️  Failed to fetch status history for {node_id}: HTTP {response.status_code}"
-                )
+                if not hasattr(self, '_api_error_warning_shown'):
+                    print(f"  ⚠️  Dashboard API status history unavailable (HTTP {response.status_code})")
+                    self._api_error_warning_shown = True
                 return None
         except requests.exceptions.ConnectionError:
             # Dashboard API might not be accessible from this environment
-            print(f"  ⚠️  Dashboard API not accessible - status history unavailable")
+            if not hasattr(self, '_connection_warning_shown'):
+                print("  ⚠️  Dashboard API not accessible - status history unavailable")
+                self._connection_warning_shown = True
             return None
         except requests.exceptions.Timeout:
-            print(f"  ⚠️  Timeout fetching status history for {node_id}")
+            if not hasattr(self, '_timeout_warning_shown'):
+                print("  ⚠️  Dashboard API timeout - status history unavailable")
+                self._timeout_warning_shown = True
             return None
-        except requests.RequestException as e:
-            print(f"  ⚠️  Status history API request failed for {node_id}: {e}")
+        except requests.RequestException:
+            if not hasattr(self, '_request_error_warning_shown'):
+                print("  ⚠️  Dashboard API request failed - status history unavailable")
+                self._request_error_warning_shown = True
             return None
-        except Exception as e:
-            print(f"  ⚠️  Unexpected error fetching status history for {node_id}: {e}")
+        except Exception:
+            if not hasattr(self, '_unexpected_error_warning_shown'):
+                print("  ⚠️  Unexpected error fetching status history - feature unavailable")
+                self._unexpected_error_warning_shown = True
             return None
 
-    def format_status_history(self, history: List[Dict]) -> str:
+    def format_status_history(self, history_data: Dict) -> str:
         """Format test status history with emojis and arrows."""
+        # Extract the actual history list from the response
+        if isinstance(history_data, dict) and 'status_history' in history_data:
+            history = history_data['status_history']
+        elif isinstance(history_data, list):
+            history = history_data
+        else:
+            return "No history available"
+        
         if not history:
             return "No history available"
         
-        # Sort by timestamp (most recent first)
-        sorted_history = sorted(history, key=lambda x: x.get('timestamp', ''), reverse=True)
+        # Sort by start_time (most recent first)
+        sorted_history = sorted(history, key=lambda x: x.get('start_time', ''), reverse=True)
         
         # Take only the last 10 entries to keep it manageable
         recent_history = sorted_history[:10]
         
         status_emojis = []
         for entry in reversed(recent_history):  # Reverse to show oldest to newest
-            status = entry.get('status', '').upper()
+            status = entry.get('status', '')
+            if status is None:
+                status = ''
+            status = status.upper()
             if status == 'PASS':
                 status_emojis.append('✅')
             elif status == 'FAIL':
@@ -251,13 +305,17 @@ class RegressionAnalyzer:
         details = self.fetch_dashboard_details(node_id, reg_type)
         if details:
             enhanced_regression["dashboard_details"] = details
-
             # For boots and tests, fetch status history if enabled
             if reg_type in ["boots", "tests"] and self.fetch_status_history:
-                status_history = self.fetch_test_status_history(node_id)
-                if status_history:
-                    enhanced_regression["status_history"] = status_history
-                    enhanced_regression["status_history_display"] = self.format_status_history(status_history)
+                try:
+                    status_history = self.fetch_test_status_history(node_id, details)
+                    if status_history:
+                        enhanced_regression["status_history"] = status_history
+                        enhanced_regression["status_history_display"] = self.format_status_history(status_history)
+                except Exception as e:
+                    print(f"    ⚠️  Error processing status history for {node_id}: {e}")
+                    enhanced_regression["status_history"] = None
+                    enhanced_regression["status_history_display"] = ""
 
             # Check for inconclusive conditions based on API response fields
             if reg_type in ["boots", "tests"]:
@@ -388,6 +446,11 @@ class RegressionAnalyzer:
                     ] = enhanced_regressions
 
             branch_result["regression_data"] = enhanced_regression_data
+            
+            # Show status history summary if we tried to fetch it
+            if self.fetch_status_history and hasattr(self, '_api_404_count') and self._api_404_count > 0:
+                print(f"  📊 Status history: No data available for {self._api_404_count} test(s)")
+            
             # Calculate inconclusive statistics
             inconclusive_stats = {
                 "total_inconclusive": 0,
@@ -450,7 +513,7 @@ class RegressionAnalyzer:
         )
         print(f"🎯 Origin: {KCIDB_ORIGIN}")
         if self.fetch_status_history:
-            print("📊 Status history: Enabled (will fetch test status history with emojis)")
+            print("📊 Status history: Enabled")
             # Test dashboard API availability for status history
             try:
                 response = requests.get(f"{self.dashboard_api_base}test/", timeout=5)
@@ -568,7 +631,7 @@ class RegressionAnalyzer:
                     regressions = regression_data["regressions"][reg_type]
                     if regressions:
                         report.append(
-                            f"  🔴 {reg_type.capitalize()} regressions ({len(regressions)}):"
+                            f"  ❌ {reg_type.capitalize()} regressions ({len(regressions)}):"
                         )
                         for i, reg in enumerate(regressions):
                             # Determine status icon
@@ -576,7 +639,7 @@ class RegressionAnalyzer:
                                 status_icon = "⚠️"
                                 status_text = f" (INCONCLUSIVE: {reg.get('inconclusive_reason', 'Unknown')})"
                             else:
-                                status_icon = "🔴"
+                                status_icon = "❌"
                                 status_text = ""
 
                             if reg_type == "builds":
@@ -591,7 +654,7 @@ class RegressionAnalyzer:
                                     f"    {i+1}. {status_icon} {reg['test_path']} on {reg['hardware']}{status_text}"
                                 )
                                 report.append(f"       🔗 {dashboard_link}")
-                                
+
                                 # Add status history for boots and tests
                                 if reg.get("status_history_display"):
                                     report.append(f"       📊 History: {reg['status_history_display']}")
