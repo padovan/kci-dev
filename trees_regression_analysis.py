@@ -151,7 +151,7 @@ class RegressionAnalyzer:
             return None
 
     def format_status_history(self, history: List[Dict]) -> str:
-        """Format test status history with emojis."""
+        """Format test status history with emojis and arrows."""
         if not history:
             return "No history available"
         
@@ -171,7 +171,8 @@ class RegressionAnalyzer:
             else:
                 status_emojis.append('⚠️')  # inconclusive (all other statuses)
         
-        return ' '.join(status_emojis)
+        # Join with arrows to show direction (oldest → newest)
+        return ' → '.join(status_emojis)
 
     def is_infrastructure_error_msg(self, error_msg: str) -> bool:
         """Check if error message indicates infrastructure issues."""
