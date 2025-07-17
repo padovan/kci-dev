@@ -116,7 +116,7 @@ def main():
     print(f"📅 Analysis started at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print("🎯 Origin: maestro")
     print("📊 Status history: Enabled (will fetch test status history with emojis)")
-    print("📊 Staging API: Accessible")
+    print("📊 Dashboard API: Accessible")
     print("=" * 80)
     print()
     

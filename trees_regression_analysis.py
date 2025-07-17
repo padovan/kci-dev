@@ -6,14 +6,14 @@ This script automatically runs regression analysis across multiple kernel tree b
 using kci-dev results compare command and provides a comprehensive summary report.
 
 Features:
-- Fetches test status history from staging dashboard API (when accessible)
+- Fetches test status history from main dashboard API (when accessible)
 - Displays status history with emojis: ✅ pass, ❌ fail, ⚠️ inconclusive
 - Shows chronological progression with arrows: ✅ → ❌ → ✅ → ❌
 - Provides comprehensive regression analysis with infrastructure detection
 - Supports multiple output formats (human-readable and JSON)
 
-Note: Status history requires access to staging.dashboard.kernelci.org:9000.
-If the staging API is not accessible, the script will continue without history.
+Note: Status history requires access to dashboard.kernelci.org/api/test/{id}/status_history/.
+If the dashboard API is not accessible, the script will continue without history.
 """
 
 import argparse
@@ -51,7 +51,6 @@ class RegressionAnalyzer:
         self.results = {}
         self.start_time = datetime.now()
         self.dashboard_api_base = "https://dashboard.kernelci.org/api/"
-        self.staging_api_base = "https://staging.dashboard.kernelci.org:9000/api/"
         self.fetch_status_history = fetch_status_history
 
     def run_kci_compare(
@@ -136,9 +135,9 @@ class RegressionAnalyzer:
             return None
 
     def fetch_test_status_history(self, node_id: str) -> Optional[List[Dict]]:
-        """Fetch test status history from staging dashboard API."""
+        """Fetch test status history from main dashboard API."""
         try:
-            endpoint = f"{self.staging_api_base}test/{node_id}/status_history/"
+            endpoint = f"{self.dashboard_api_base}test/{node_id}/status_history/"
             response = requests.get(endpoint, timeout=10)
             if response.status_code == 200:
                 return response.json()
@@ -151,8 +150,8 @@ class RegressionAnalyzer:
                 )
                 return None
         except requests.exceptions.ConnectionError:
-            # Staging API might not be accessible from this environment
-            print(f"  ⚠️  Staging API not accessible - status history unavailable")
+            # Dashboard API might not be accessible from this environment
+            print(f"  ⚠️  Dashboard API not accessible - status history unavailable")
             return None
         except requests.exceptions.Timeout:
             print(f"  ⚠️  Timeout fetching status history for {node_id}")
@@ -452,15 +451,15 @@ class RegressionAnalyzer:
         print(f"🎯 Origin: {KCIDB_ORIGIN}")
         if self.fetch_status_history:
             print("📊 Status history: Enabled (will fetch test status history with emojis)")
-            # Test staging API availability
+            # Test dashboard API availability for status history
             try:
-                response = requests.get(f"{self.staging_api_base}test/", timeout=5)
+                response = requests.get(f"{self.dashboard_api_base}test/", timeout=5)
                 if response.status_code in [200, 404]:
-                    print("📊 Staging API: Accessible")
+                    print("📊 Dashboard API: Accessible")
                 else:
-                    print("📊 Staging API: Limited accessibility")
+                    print("📊 Dashboard API: Limited accessibility")
             except:
-                print("📊 Staging API: Not accessible - history will be unavailable")
+                print("📊 Dashboard API: Not accessible - history will be unavailable")
         else:
             print("📊 Status history: Disabled (faster analysis)")
         print("=" * 80)

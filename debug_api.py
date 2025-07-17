@@ -52,8 +52,23 @@ def test_production_api():
         response = requests.get(f"{base_url}test/", timeout=10)
         print(f"  API Base Response: {response.status_code}")
         
-        if response.status_code == 200:
+        if response.status_code in [200, 404]:
             print("  ✅ Production API is accessible")
+            
+            # Test status history endpoint with a fake ID
+            test_id = "test_example_id"
+            history_url = f"{base_url}test/{test_id}/status_history/"
+            
+            print(f"  Testing status history: {history_url}")
+            response = requests.get(history_url, timeout=10)
+            print(f"  Status History Response: {response.status_code}")
+            
+            if response.status_code == 200:
+                print("  ✅ Status history API is working")
+            elif response.status_code == 404:
+                print("  ✅ Status history API accessible (404 expected for fake ID)")
+            else:
+                print(f"  ⚠️ Status history API returned: {response.status_code}")
         else:
             print(f"  ❌ Production API returned status: {response.status_code}")
             
