@@ -4,6 +4,12 @@ Trees Regression Analysis
 
 This script automatically runs regression analysis across multiple kernel tree branches
 using kci-dev results compare command and provides a comprehensive summary report.
+
+Features:
+- Fetches test status history from staging dashboard API
+- Displays status history with emojis: ✅ pass, ❌ fail, ⚠️ inconclusive
+- Provides comprehensive regression analysis with infrastructure detection
+- Supports multiple output formats (human-readable and JSON)
 """
 
 import argparse
@@ -36,11 +42,13 @@ JSON_OUTPUT_DIR = "./regression_reports"
 
 
 class RegressionAnalyzer:
-    def __init__(self, tree_branches: Dict):
+    def __init__(self, tree_branches: Dict, fetch_status_history: bool = True):
         self.tree_branches = tree_branches
         self.results = {}
         self.start_time = datetime.now()
         self.dashboard_api_base = "https://dashboard.kernelci.org/api/"
+        self.staging_api_base = "https://staging.dashboard.kernelci.org:9000/api/"
+        self.fetch_status_history = fetch_status_history
 
     def run_kci_compare(
         self, giturl: str, branch: str
@@ -123,6 +131,48 @@ class RegressionAnalyzer:
             print(f"  ⚠️  Unexpected error fetching {node_id}: {e}")
             return None
 
+    def fetch_test_status_history(self, node_id: str) -> Optional[List[Dict]]:
+        """Fetch test status history from staging dashboard API."""
+        try:
+            endpoint = f"{self.staging_api_base}test/{node_id}/status_history/"
+            response = requests.get(endpoint, timeout=10)
+            if response.status_code == 200:
+                return response.json()
+            else:
+                print(
+                    f"  ⚠️  Failed to fetch status history for {node_id}: HTTP {response.status_code}"
+                )
+                return None
+        except requests.RequestException as e:
+            print(f"  ⚠️  Status history API request failed for {node_id}: {e}")
+            return None
+        except Exception as e:
+            print(f"  ⚠️  Unexpected error fetching status history for {node_id}: {e}")
+            return None
+
+    def format_status_history(self, history: List[Dict]) -> str:
+        """Format test status history with emojis."""
+        if not history:
+            return "No history available"
+        
+        # Sort by timestamp (most recent first)
+        sorted_history = sorted(history, key=lambda x: x.get('timestamp', ''), reverse=True)
+        
+        # Take only the last 10 entries to keep it manageable
+        recent_history = sorted_history[:10]
+        
+        status_emojis = []
+        for entry in reversed(recent_history):  # Reverse to show oldest to newest
+            status = entry.get('status', '').upper()
+            if status == 'PASS':
+                status_emojis.append('✅')
+            elif status == 'FAIL':
+                status_emojis.append('❌')
+            else:
+                status_emojis.append('⚠️')  # inconclusive (all other statuses)
+        
+        return ' '.join(status_emojis)
+
     def is_infrastructure_error_msg(self, error_msg: str) -> bool:
         """Check if error message indicates infrastructure issues."""
         infrastructure_keywords = [
@@ -176,6 +226,8 @@ class RegressionAnalyzer:
         enhanced_regression["inconclusive"] = False
         enhanced_regression["inconclusive_reason"] = ""
         enhanced_regression["dashboard_details"] = None
+        enhanced_regression["status_history"] = None
+        enhanced_regression["status_history_display"] = ""
 
         node_id = regression.get("id")
         if not node_id:
@@ -185,6 +237,13 @@ class RegressionAnalyzer:
         details = self.fetch_dashboard_details(node_id, reg_type)
         if details:
             enhanced_regression["dashboard_details"] = details
+
+            # For boots and tests, fetch status history if enabled
+            if reg_type in ["boots", "tests"] and self.fetch_status_history:
+                status_history = self.fetch_test_status_history(node_id)
+                if status_history:
+                    enhanced_regression["status_history"] = status_history
+                    enhanced_regression["status_history_display"] = self.format_status_history(status_history)
 
             # Check for inconclusive conditions based on API response fields
             if reg_type in ["boots", "tests"]:
@@ -305,6 +364,10 @@ class RegressionAnalyzer:
                                 regression, reg_type
                             )
                             enhanced_regressions.append(enhanced_regression)
+                            
+                            # Show progress for status history fetching
+                            if self.fetch_status_history and reg_type in ["boots", "tests"] and enhanced_regression.get("status_history_display"):
+                                print(f"    📊 Fetched status history for {regression.get('id', 'unknown')}")
 
                     enhanced_regression_data["regressions"][
                         reg_type
@@ -372,6 +435,10 @@ class RegressionAnalyzer:
             f"📅 Analysis started at: {self.start_time.strftime('%Y-%m-%d %H:%M:%S')}"
         )
         print(f"🎯 Origin: {KCIDB_ORIGIN}")
+        if self.fetch_status_history:
+            print("📊 Status history: Enabled (will fetch test status history with emojis)")
+        else:
+            print("📊 Status history: Disabled (faster analysis)")
         print("=" * 80)
 
         for tree_branch_key, config in self.tree_branches.items():
@@ -501,6 +568,10 @@ class RegressionAnalyzer:
                                     f"    {i+1}. {status_icon} {reg['test_path']} on {reg['hardware']}{status_text}"
                                 )
                                 report.append(f"       🔗 {dashboard_link}")
+                                
+                                # Add status history for boots and tests
+                                if reg.get("status_history_display"):
+                                    report.append(f"       📊 History: {reg['status_history_display']}")
 
         report.append("\n" + "=" * 60)
         return "\n".join(report)
@@ -599,6 +670,11 @@ def main():
         action="append",
         help="Specific tree/branch to analyze (e.g., android/android13-5.15-lts). Can be used multiple times. If not specified, all active trees from config will be analyzed.",
     )
+    parser.add_argument(
+        "--no-status-history", 
+        action="store_true", 
+        help="Skip fetching test status history (faster but less detailed)"
+    )
 
     args = parser.parse_args()
 
@@ -638,7 +714,7 @@ def main():
         print(f"🎯 Analyzing {len(active_trees)} active trees from config")
 
     try:
-        analyzer = RegressionAnalyzer(tree_branches)
+        analyzer = RegressionAnalyzer(tree_branches, fetch_status_history=not args.no_status_history)
         analyzer.run_analysis()
 
         # Generate and display summary
